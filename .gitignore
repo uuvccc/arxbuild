@@ -1,0 +1,54 @@
+# Compiled executables
+arxbuild.exe
+*.exe
+
+# Compiled libraries
+*.dll
+*.arx
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+*.cmake
+*.dir/
+build/
+CMakeLists.txt.user
+
+# MSBuild output
+bin/
+obj/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.tlog/
+
+# Build artifacts
+*.lib
+*.exp
+*.pdb
+*.ilk
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+build_arx_demo/build/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# NuGet packages
+packages/
+*.nupkg
+
+# Test files
+test.arx
