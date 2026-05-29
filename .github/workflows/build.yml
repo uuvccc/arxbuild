@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build arxbuild.exe
+        run: |
+          C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe -nologo -out:arxbuild.exe Program.cs
+
+      - name: Upload arxbuild.exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: arxbuild
+          path: arxbuild.exe
+
+      - name: Build demo.arx (if ARX SDK available)
+        if: ${{ secrets.ARX_SDK_ROOT != '' }}
+        run: |
+          Write-Host "ARX_SDK_ROOT is set, building demo.arx..."
+          .\arxbuild.exe demo.cpp --sdk="$env:ARX_SDK_ROOT"
+        shell: pwsh
+        env:
+          ARX_SDK_ROOT: ${{ secrets.ARX_SDK_ROOT }}
+
+      - name: Upload demo.arx artifact
+        if: ${{ secrets.ARX_SDK_ROOT != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-arx
+          path: demo.arx
