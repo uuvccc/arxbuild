@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>ArxBuild</RootNamespace>
     <AssemblyName>arxbuild</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>

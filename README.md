@@ -1,79 +1,123 @@
 # arxbuild
 
-A simple command-line tool to compile ObjectARX 2019 plugins from a single .cpp file.
+A command-line tool to compile ObjectARX plugins from a single .cpp file.
 
 ## Features
 
 - Compile single .cpp file to .arx plugin without project files
 - No need to open Visual Studio
 - Automatic configuration of headers, libraries, and linker
-- Uses ObjectARX 2019 SDK automatically
+- Auto-detect ARX SDK path, Visual Studio version, and library version
+- No hardcoded versions — works with any CMake, VS, .NET, or ObjectARX SDK
 - Cleanup temporary files after compilation
-- Output compilation logs
-- Open source, can be uploaded to GitHub
 
 ## Requirements
 
-- Windows 10/11
-- Visual Studio 2022 (with C++ development tools)
-- CMake (added to PATH)
-- ObjectARX 2019 SDK installed at: `C:\Autodesk\Autodesk_ObjectARX_2019_Win_64_and_32_Bit`
+- Windows 7 SP1 or later
+- Visual Studio 2017+ (with C++ development tools)
+- CMake 2.8+ (added to PATH)
+- ObjectARX SDK (any version)
 
 ## Usage
 
 ```bash
-arxbuild.exe test.cpp
+arxbuild.exe <source.cpp> [--sdk=PATH] [--platform=x64|x86] [--config=Release|Debug]
 ```
 
-This will compile `test.cpp` and output `test.arx` in the same directory.
+### Options
+
+| Option | Description | Default |
+|---|---|---|
+| `--sdk=PATH` | ObjectARX SDK root directory | auto-detect |
+| `--platform=x64` | Target platform | x64 |
+| `--config=Release` | Build configuration | Release |
+
+### Examples
+
+```bash
+# Basic usage (auto-detect SDK)
+arxbuild.exe test.cpp
+
+# Specify SDK path
+arxbuild.exe test.cpp --sdk=D:\SDK\ObjectARX_2024
+
+# Debug build, x86
+arxbuild.exe test.cpp --platform=x86 --config=Debug
+```
+
+## ObjectARX SDK Path
+
+The tool resolves the SDK path in the following priority:
+
+1. **`--sdk=PATH`** command line argument (highest)
+2. **`ARX_SDK_ROOT`** environment variable
+3. **Auto-detect** — scan `C:\Autodesk\` for directories matching `*ObjectARX*` that contain an `inc\` subfolder
+
+Set the environment variable for convenience:
+
+```bash
+set ARX_SDK_ROOT=C:\Autodesk\Autodesk_ObjectARX_2019_Win_64_and_32_Bit
+```
+
+Or pass it each time:
+
+```bash
+arxbuild.exe demo.cpp --sdk=C:\Autodesk\Autodesk_ObjectARX_2019_Win_64_and_32_Bit
+```
 
 ## Build the Tool
 
 ### Option 1: Using Built-in C# Compiler (Recommended)
 
-Open Command Prompt and run:
+No Visual Studio or .NET SDK required — Windows includes `csc.exe`:
 
 ```bash
-C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe /out:arxbuild.exe Program.cs
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe -nologo -out:arxbuild.exe Program.cs
 ```
 
 ### Option 2: Using Visual Studio Developer Command Prompt
 
-1. Open **Developer Command Prompt for VS 2022**
-2. Navigate to the project directory
-3. Run:
-
 ```bash
-csc Program.cs /out:arxbuild.exe /target:exe
+csc /out:arxbuild.exe Program.cs
 ```
 
-### Option 3: Using Visual Studio IDE
+### Option 3: Using MSBuild
 
-1. Open Visual Studio 2022
-2. File → Open → File → Select `Program.cs`
-3. Use Visual Studio's build functionality
+```bash
+msbuild arxbuild.csproj /p:Configuration=Release
+```
 
 ## How It Works
 
-1. Creates a temporary directory
-2. Generates CMakeLists.txt with proper ObjectARX configuration
-3. Copies the source file to the temporary directory
-4. Runs CMake to generate Visual Studio solution
-5. Runs MSBuild to compile the project
-6. Copies the resulting .arx file to the original directory
-7. Cleans up the temporary directory
+1. Resolves ObjectARX SDK path (`--sdk` > env var > auto-detect)
+2. Auto-detects VS version via `vswhere.exe` for CMake generator
+3. Auto-detects ARX library version by scanning `acdb*.lib` in the SDK
+4. Creates a temporary directory
+5. Generates `CMakeLists.txt` with proper ObjectARX configuration
+6. Copies the source file to the temporary directory
+7. Runs CMake to generate Visual Studio solution
+8. Runs MSBuild to compile the project
+9. Copies the resulting `.arx` file to the original directory
+10. Cleans up the temporary directory
 
-## ObjectARX SDK Path
+## Standalone CMake Project
 
-The tool assumes ObjectARX 2019 SDK is installed at:
-`C:\Autodesk\Autodesk_ObjectARX_2019_Win_64_and_32_Bit`
+The `build_arx_demo/` directory contains a standalone CMake project for manual builds:
 
-If your SDK is installed at a different location, modify the `sdkPath` variable in `Program.cs`.
+```bash
+cd build_arx_demo/build
+cmake -DARX_SDK_ROOT=C:/Autodesk/your_sdk_path ..
+cmake --build . --config Release
+```
+
+Or set the environment variable instead:
+
+```bash
+set ARX_SDK_ROOT=C:/Autodesk/your_sdk_path
+cmake ..
+cmake --build . --config Release
+```
 
 ## License
 
 MIT License
-
-## Contributing
-
-Feel free to submit issues and pull requests.
