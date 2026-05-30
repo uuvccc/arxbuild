@@ -24,17 +24,29 @@ jobs:
           name: arxbuild
           path: arxbuild.exe
 
-      - name: Build demo.arx (if ARX SDK available)
-        if: ${{ secrets.ARX_SDK_ROOT != '' }}
-        run: |
-          Write-Host "ARX_SDK_ROOT is set, building demo.arx..."
-          .\arxbuild.exe demo.cpp --sdk="$env:ARX_SDK_ROOT"
+      - name: Check ARX SDK availability
+        id: check_sdk
         shell: pwsh
         env:
           ARX_SDK_ROOT: ${{ secrets.ARX_SDK_ROOT }}
+        run: |
+          if ($env:ARX_SDK_ROOT -ne '') {
+            echo "has_sdk=true" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "has_sdk=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Build demo.arx
+        if: steps.check_sdk.outputs.has_sdk == 'true'
+        shell: pwsh
+        env:
+          ARX_SDK_ROOT: ${{ secrets.ARX_SDK_ROOT }}
+        run: |
+          Write-Host "ARX_SDK_ROOT is set, building demo.arx..."
+          .\arxbuild.exe demo.cpp --sdk="$env:ARX_SDK_ROOT"
 
       - name: Upload demo.arx artifact
-        if: ${{ secrets.ARX_SDK_ROOT != '' }}
+        if: steps.check_sdk.outputs.has_sdk == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: demo-arx
